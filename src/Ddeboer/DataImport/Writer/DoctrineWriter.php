@@ -89,6 +89,9 @@ class DoctrineWriter extends AbstractWriter
         $this->objectName = $objectName;
         $this->objectRepository = $objectManager->getRepository($objectName);
         $this->objectMetadata = $objectManager->getClassMetadata($objectName);
+        if (isset($index) && !is_array($index)) {
+            $index = array($index);
+        }
         $this->index = $index;
     }
 
@@ -187,11 +190,13 @@ class DoctrineWriter extends AbstractWriter
         // first
         if (false === $this->truncate) {
             if ($this->index) {
-                $object = $this->objectRepository->findOneBy(
-                    array($this->index => $item[$this->index])
-                );
+                $criteria = array();
+                foreach($this->index as $fieldName) {
+                    $criteria[$fieldName] = $item[$fieldName];
+                }
+                $object = $this->objectRepository->findOneBy($criteria);
             } else {
-                //TODO: it's better to set index field explicitly.
+                //TODO: it's better to set index field explicitly and drop this part.
                 $object = $this->objectRepository->find(current($item));
             }
         }
